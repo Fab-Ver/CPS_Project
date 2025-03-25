@@ -9,11 +9,13 @@ delta = 1e-10;   %Convergence Treshold
 sigma = 1e-2;     %Measurement noise std
 total_runs = 20; 
 nu_IJAM = 0.7; 
+max_iterations = 2000; 
 
-state_errors_ISTA_all = [];
-support_errors_ISTA_all = [];
-state_errors_IJAM_all = [];
-support_errors_IJAM_all = [];
+state_errors_ISTA_all = zeros(total_runs, max_iterations);
+support_errors_ISTA_all = zeros(total_runs, max_iterations);
+state_errors_IJAM_all = zeros(total_runs, max_iterations);
+support_errors_IJAM_all = zeros(total_runs, max_iterations);
+iterations = 1:max_iterations;
 
 for i=1:total_runs
     %Generate Data
@@ -41,9 +43,33 @@ for i=1:total_runs
     nu_ISTA = 0.99 / norm(G,2)^2;
 
     %Solve using ISTA 
-    [state_errors_ISTA, support_errors_ISTA, iterations_ISTA] = ISTA(y, C, q, n, lambda, nu_ISTA, delta, x_true, a);
+    [state_errors_ISTA, support_errors_ISTA, iterations_ISTA] = ISTA(y, C, q, n, lambda, nu_ISTA, delta, x_true, a, max_iterations);
+    state_errors_ISTA_all(i, :) = state_errors_ISTA;
+    support_errors_ISTA_all(i, : ) = support_errors_ISTA; 
 
     %Solve using IJAM
-    [state_errors_IJAM, support_errors_IJAM, iterations_IJAM] = IJAM(y, C, q, n, lambda, nu_IJAM, delta, x_true, a);
+    [state_errors_IJAM, support_errors_IJAM, iterations_IJAM] = IJAM(y, C, q, n, lambda, nu_IJAM, delta, x_true, a, max_iterations);
+    state_errors_IJAM_all(i, :) = state_errors_IJAM;
+    support_errors_IJAM_all(i, : ) = support_errors_IJAM; 
 
 end
+
+mean_state_errors_ISTA = mean(state_errors_ISTA_all, 1);
+mean_support_errors_ISTA = mean(support_errors_ISTA_all, 1);
+
+mean_state_errors_IJAM = mean(state_errors_IJAM_all, 1);
+mean_support_errors_IJAM = mean(support_errors_IJAM_all, 1);
+
+figure;
+semilogx(iterations, mean_state_errors_ISTA, '-', 'DisplayName', 'ISTA'); hold on;
+semilogx(iterations, mean_state_errors_IJAM, '-', 'DisplayName', 'IJAM'); hold on;
+xlabel('Iterations'); ylabel('State Estimation Error');
+legend; title('State Estimation Error'); grid on;
+exportgraphics(gcf, 'results/state_estimation_error.png', 'Resolution', 300);
+
+figure;
+semilogx(iterations, mean_support_errors_ISTA, '-', 'DisplayName', 'ISTA'); hold on;
+semilogx(iterations, mean_support_errors_IJAM, '-', 'DisplayName', 'IJAM'); hold on;
+xlabel('Iteration'); ylabel('Support Attack Error');
+legend; title('Support Attack Error'); grid on;
+exportgraphics(gcf, 'results/support_attack_error.png', 'Resolution', 300);

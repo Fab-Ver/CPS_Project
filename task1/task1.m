@@ -9,7 +9,7 @@ delta = 1e-10;   %Convergence Treshold
 sigma = 1e-2;     %Measurement noise std
 total_runs = 20; 
 nu_IJAM = 0.7; 
-max_iterations = 5000; 
+max_iterations = 10000; 
 
 state_errors_ISTA_all = zeros(total_runs, max_iterations);
 support_errors_ISTA_all = zeros(total_runs, max_iterations);

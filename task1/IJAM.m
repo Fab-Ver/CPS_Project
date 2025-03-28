@@ -15,7 +15,7 @@ function [state_errors_IJAM, support_errors_IJAM, iterations] = IJAM(y, C, q, n,
         a_prev = a_est;
 
         x_est = pinv(C) * (y - a_prev);
-        a_est = soft_thresholding(a_prev - nu * (C * x_prev + a_prev - y), lambda);
+        a_est = soft_thresholding(a_prev - nu * (C * x_prev + a_prev - y), nu * lambda);
         state_errors_IJAM(t) = norm(x_est - x_true, 2) / norm(x_true, 2);
         support_errors_IJAM(t) = support_attack_error(a, a_est);
         iterations(t) = t; 

@@ -12,5 +12,5 @@ nu = norm(G,2)^(-2);
 
 [x, a] = ISTA_localization(y, G, lambda, nu, n, q);
 
-supp_x = supp(x')
+[supp_x, ind_x] = max(x') % Consider only the state with the higher value
 supp_a = supp(a')

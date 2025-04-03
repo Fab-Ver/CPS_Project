@@ -7,8 +7,8 @@ function [state_estimation_error, attack_error] = DSSO(x0, C, A, a_true, lambda,
     attack_error = []; 
     state_estimation_error(1) = norm(x_est - x_true, 2) / norm(x_true); 
     attack_error(1) = support_attack_error(a_true, a_est); 
-    L = A * pinv(C);
-
+    des_eig = 0.01 * rand(n, 1); %% approximately null
+    L = place (A',C', des_eig )';
     for k=2:T_max
         y_true = C * x_true + a_true;
         y_est = C * x_est + a_est;

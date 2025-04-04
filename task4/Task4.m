@@ -5,18 +5,25 @@ close all
 load('tracking_data.mat')
 
 lambda = 10; 
-
 q=15;   
 n=36;
 G = normalize([D eye(q)]);
-nu_SSO = norm(G,2)^(-2);
+nu = norm(G,2)^(-2);
+epsilon = 1; 
+
 %% SSO
-[err_SSO, att_err_SSO] = SSO(xtrue0, G, A, atrue, lambda, nu_SSO, q, n,T,y);
- %%
-   iterations = 1:T;
- figure;
- loglog(iterations, err_SSO, '-', 'DisplayName', 'SSO'); hold on;
- legend; title('State Estimation Error'); grid on;
- figure;
- semilogx(iterations, att_err_SSO, '-', 'DisplayName', 'SSO'); hold on;
- legend; title('Support Attack Error'); grid on;
+[support_state_error, support_attack_error] = SSO(xtrue0, G, A, atrue, lambda, nu, q, n, T, y, epsilon);
+
+time_step = 1:T;
+
+figure;
+plot(time_step, support_state_error, '-'); hold on;
+xlabel('Time Step'); ylabel('Support State Error');
+legend; title('Support State Error'); grid on;
+exportgraphics(gcf, 'results/support_state_error.png', 'Resolution', 300);
+
+figure;
+plot(time_step, support_attack_error, '-'); hold on;
+xlabel('Time Step'); ylabel('Support Attack Error');
+legend; title('Support Attack Error'); grid on;
+exportgraphics(gcf, 'results/support_attack_error.png', 'Resolution', 300);

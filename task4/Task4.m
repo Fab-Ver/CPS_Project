@@ -11,7 +11,6 @@ G = normalize([D eye(q)]);
 nu = norm(G,2)^(-2);
 epsilon = 1; 
 
-%% SSO
 [support_state_error, support_attack_error] = SSO(xtrue0, G, A, atrue, lambda, nu, q, n, T, y, epsilon);
 
 time_step = 1:T;

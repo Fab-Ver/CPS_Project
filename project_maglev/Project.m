@@ -2,28 +2,35 @@ clc;
 clear all;
 close all;
 
-global A_star B c Kf F; 
-
 fprintf('=== INITIALIZING SIMULINK PARAMETERS ===\n');
 fprintf('Multi-Agent Magnetic Levitation System\n');
 fprintf('Cooperative Dynamic Regulator Design\n\n');
 
-A = [0 1;
-    880.87 0];
-B= [0; -9.9453];
+% Agents 
+A = [0 1; 880.87 0];
+
+B = [0; -9.9453];
 
 C= [708.27 0];
-D = 0;
 
-%K = place(A, B, [0+i*10, 0-i*10]); 
-K = place(A, B, [0, -2500]); %ramp 
+D = zeros(1,2);
 
-N_agent = 6;
-N_agentLeader = 7;
+% Leader Node -> Sinusoid 
+w0 = 1; 
+R0 = 1; 
+K0 = place(A,B,[w0*1i -w0*1i]);
 
-fprintf('System initialized: %d followers + 1 leader\n', N_agent);
-fprintf('matrix A :\n');
-disp(A);
+A0 = A-B*K0;
+L0 = place(A0', C', [-5, -4])';
+
+x0_0 = [R0 0]';
+x0_1 = [12 1]';
+x0_2 = [4 1]';
+x0_3 = [6 1]';
+x0_4 = [6 1]';
+x0_5 = [9 1]';
+x0_6 = [8 1]';
+
 %% defintion of the Graph matrix
 % Star topology for simplicity (can be easily changed)
 topology_type = 'star';  % Options: 'star', 'ring', 'complete', 'chain'
@@ -34,34 +41,20 @@ d_in = sum(Adj, 2);
 Deg = diag(d_in);
 L = Deg - Adj;
 
-x0 = [10, 1];
-
-x0_1 = [12 1];
-x0_2 = [4 1];
-x0_3 = [6 1];
-x0_4 = [6 1];
-x0_5 = [9 1];
-x0_6 = [8 1];
-
-% Compute A_star
-A_star = A - B * K;
+% Compute coupling gain c
+eig_LG = eig(L+G);
+cmin = 1/2 * (1/min(real(eig_LG)));
+c = cmin * 2;
 
 Q = eye(2);
 R = 1; % Weighting factor for control input
 
-P = are(A_star,B*R^(-1)*B', Q);
-K = inv(R)*B'*P;
-F = P * C'/R;
+%Distributed Controller Riccati Equation 
+P = are(A0, B*R^(-1)*B', Q);
+K = R^(-1)*B'*P;
 
-eig_LG = eig(L+G);
+% Local Observer
+P = are(A0', C'*R^-1*C, Q);
+F = P * C' * R^(-1);
 
 
-
-% Compute coupling gain c
-c = 1/2 * (1/min(real(eig_LG)));
-
-% Flip sign of F
-F = -F;
-
-% Compute follower gain Kf
-Kf = inv(R) * B' * P;

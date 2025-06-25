@@ -31,11 +31,13 @@ x0_4 = [6 1]';
 x0_5 = [9 1]';
 x0_6 = [8 1]';
 
+N = 6;
+
 %% defintion of the Graph matrix
 % Star topology for simplicity (can be easily changed)
 topology_type = 'star';  % Options: 'star', 'ring', 'complete', 'chain'
 
-[Adj, G] = create_network_topology(N_agent, topology_type);
+[Adj, G] = create_network_topology(N, topology_type);
 
 d_in = sum(Adj, 2);
 Deg = diag(d_in);

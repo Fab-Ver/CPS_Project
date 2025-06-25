@@ -15,7 +15,7 @@ B= [0; -9.9453];
 
 C= [708.27, 0];
 % D = 0;
-
+K_place = place(A, B, [0, 100]); % oscillanting response
 N_agent = 6;
 N_agentLeader = 7;
 
@@ -42,10 +42,10 @@ D_l0 = 0;
 
 x_init0 = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]';
 %% Laplacian Matrix
-K = place(A, B, [0+i*10, 0-i*10]); % oscillanting response
+
 %K = place(A, B, [0 -100]); % step response
-%K = place(A, B, [-0.1 0]);  % ramp response
-A_star = A-B*K;
+%K = place(A, B, [-0 0]);  % ramp response
+A_star = A-B*K_place;
 d_in = sum(A_adj, 2);
 D = diag(d_in);
 L = D - A_adj;
@@ -62,8 +62,8 @@ disp(lambda_LG);
 %% LQR controller desing
 Q = eye(2);
 R = 1; % Weighting factor for control input
-P = are(A_star,B*R^-1*B',Q);
-% K = inv(R)*B'*P;
+P = are(A,B*R^-1*B',Q);
+K = inv(R)*B'*P;
 F = P * C'/R;
 % fprintf('\nControl gain K (from ARE):\n');
 % disp(K);

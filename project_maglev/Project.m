@@ -15,7 +15,7 @@ C= [708.27 0];
 
 D = zeros(1,2);
 
-reference = 'const'; % 'const' % 'ramp'
+reference = 'sin'; % 'const' % 'ramp'
 
 switch reference
     case 'const'
@@ -74,5 +74,10 @@ K = R^(-1) * B' *Pc;
 P = are(A0', C' *R^(-1) * C, Q);
 F = P * C' * R^(-1);
 
+In = eye(N);
+Ag = kron(In, A0) - c * kron(L + G, F*C);
+eigvals = eig(Ag) + 1;
 
-
+if any(real(eigvals) >= 0)
+    error('At least one eigenvalue has a real part greater than or equal to 0. The system may be unstable.');
+end

@@ -6,6 +6,9 @@ fprintf('=== INITIALIZING SIMULINK PARAMETERS ===\n');
 fprintf('Multi-Agent Magnetic Levitation System\n');
 fprintf('Cooperative Dynamic Regulator Design\n\n');
 
+noise_level = 10000;
+noise_freq = 0.1;
+
 % Agents 
 A = [0 1; 880.87 0];
 
@@ -76,7 +79,7 @@ F = P * C' * R^(-1);
 
 In = eye(N);
 Ag = kron(In, A0) - c * kron(L + G, F*C);
-eigvals = eig(Ag) + 1;
+eigvals = eig(Ag);
 
 if any(real(eigvals) >= 0)
     error('At least one eigenvalue has a real part greater than or equal to 0. The system may be unstable.');

@@ -15,7 +15,7 @@ C= [708.27 0];
 
 D = zeros(1,2);
 
-reference = 'sin';
+reference = 'const'; % 'const' % 'ramp'
 
 switch reference
     case 'const'
@@ -35,14 +35,16 @@ end
 
 A0 = A-B*K0;
 
-L0 = place(A', C', [-10, -20])';
+L0 = place(A0', C', [-10, -20])';
 
-x0_1 = [0 0]';
-x0_2 = [0 0]';
-x0_3 = [0 0]';
-x0_4 = [0 0]';
-x0_5 = [0 0]';
-x0_6 = [0 0]';
+perturb = @(v) v + 0.02 * randn(size(v));
+
+x0_1 = perturb(x0_0);
+x0_2 = perturb(x0_0);
+x0_3 = perturb(x0_0);
+x0_4 = perturb(x0_0);
+x0_5 = perturb(x0_0);
+x0_6 = perturb(x0_0);
 
 N = 6;
 
@@ -71,5 +73,6 @@ K = R^(-1) * B' *Pc;
 % Local Observer
 P = are(A0', C' *R^(-1) * C, Q);
 F = P * C' * R^(-1);
+
 
 

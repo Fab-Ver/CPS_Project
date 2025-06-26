@@ -15,69 +15,34 @@ C= [708.27 0];
 
 D = zeros(1,2);
 
-%% Leader Node -> Sinusoid 
-% w0 = 1;
-% R0 = 1;
-% K0 = place(A,B,[w0*1i -w0*1i]);
-% 
-% A0 = A-B*K0;
+reference = 'sin';
 
-% 
-% x0_0 = [R0 0]';
-
-refernce = 'sinusoid';
-switch refernce
-    case 'constant'
-        % === PARAMETRI PER RIFERIMENTO COSTANTE ===
-        constant_R0 = 20;          % Ampiezza del riferimento costante
-        K0 = place(A, B,[0, -10]);  % Per steady state
-        A0 = A - B*K0;
-        x0_0= [constant_R0; 0];
-        L0 = place(A0', C', [-1, -2])';
-        Q = eye(2);
+switch reference
+    case 'const'
+        R0 = 1;
+        x0_0 = [R0 0]';
+        K0 = place(A, B, [0, -10]);
     case 'ramp'
-        % === PARAMETRI PER RIFERIMENTO A RAMPA ===
-        initial_value = 0;        % Valore iniziale della rampa
-        slope = 0.5;              % Pendenza della rampa
-
-        % Ottieni parametri completi per la rampa
-        [A_aug, B_aug, K_aug, K0, Ki, A0, B0, x0_0] = setup_ramp_parameters(A, B, C, initial_value, slope);
-        B = B0;
-        C_aug = [C 0];
-        C = C_aug;
-        L0 = place(A0', C', [-1, -2, -100])';
-        Q = eye(3);
-        D = zeros(1,3);
-    case 'sinusoid'
-        % === PARAMETRI PER RIFERIMENTO SINUSOIDALE ===
-        sin_amplitude = 1;        % Ampiezza della sinusoide
-        sin_frequency = 1;        % Frequenza della sinusoide (rad/s)
-        K0 = place(A, B, [sin_frequency*1i, -sin_frequency*1i]);
-        A0 = A - B*K0;
-        x0_0 = [sin_amplitude; 0];
-        L0 = place(A0', C', [-1, -2])';
-        Q = eye(2);
-        
+        slope = 1;
+        K0 = acker(A, B, [0 0]);
+        x0_0 = [0 slope]';
+    case 'sin'
+        w0 = 1;
+        Amp = 1; 
+        K0 = place(A, B, [w0*1i -w0*1i]);
+        x0_0 = [Amp 0]';
 end
 
+A0 = A-B*K0;
 
-%% Initial Condition for agent
+L0 = place(A', C', [-10, -20])';
 
-if strcmp(refernce, 'ramp')
-    x0_1 = [12 1 0]';
-    x0_2 = [4 1 0]';
-    x0_3 = [6 1 0]';
-    x0_4 = [6 1 0]';
-    x0_5 = [9 1 0]';
-    x0_6 = [8 1 0]';
-else
-    x0_1 = [12 1]';
-    x0_2 = [4 1]';
-    x0_3 = [6 1]';
-    x0_4 = [6 1]';
-    x0_5 = [9 1]';
-    x0_6 = [8 1]';
-end
+x0_1 = [0 0]';
+x0_2 = [0 0]';
+x0_3 = [0 0]';
+x0_4 = [0 0]';
+x0_5 = [0 0]';
+x0_6 = [0 0]';
 
 N = 6;
 
@@ -97,12 +62,14 @@ cmin = 1/2 * (1/min(real(eig_LG)));
 c = cmin * 2;
 
 R = 1; % Weighting factor for control input
+Q = eye(2);
 
 %Distributed Controller Riccati Equation 
-P = are(A0, B*R^(-1)*B', Q);
-K = R^(-1)*B'*P;
+Pc = are(A0, B * R^(-1) * B', Q);
+K = R^(-1) * B' *Pc;
 
 % Local Observer
-P = are(A0', C'*R^-1*C, Q);
+P = are(A0', C' *R^(-1) * C, Q);
 F = P * C' * R^(-1);
+
 

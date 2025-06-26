@@ -15,15 +15,47 @@ C= [708.27 0];
 
 D = zeros(1,2);
 
-% Leader Node -> Sinusoid 
-w0 = 1; 
-R0 = 1; 
-K0 = place(A,B,[w0*1i -w0*1i]);
+%% Leader Node -> Sinusoid 
+% w0 = 1;
+% R0 = 1;
+% K0 = place(A,B,[w0*1i -w0*1i]);
+% 
+% A0 = A-B*K0;
 
-A0 = A-B*K0;
-L0 = place(A0', C', [-5, -4])';
+% 
+% x0_0 = [R0 0]';
 
-x0_0 = [R0 0]';
+refernce = 'constant';
+switch refernce
+    case 'constant'
+        % === PARAMETRI PER RIFERIMENTO COSTANTE ===
+        constant_R0 = 20;          % Ampiezza del riferimento costante
+        K0 = place(A, B,[0, -10]);  % Per steady state
+        A0 = A - B*K0;
+        x0_0= [constant_R0; 0];
+    case 'ramp'
+        % === PARAMETRI PER RIFERIMENTO A RAMPA ===
+        initial_value = 0;        % Valore iniziale della rampa
+        slope = 0.5;              % Pendenza della rampa
+
+        % Ottieni parametri completi per la rampa
+        [A_aug, B_aug, K_aug, K0, Ki, A0, B0, x0_0] = setup_ramp_parameters(A, B, C, initial_value, slope);
+        B = B0;
+        C_aug = [C 0];
+        L0 = place(A0', C_aug', [-1, -2, -100])';
+    case 'sinusoid'
+        % === PARAMETRI PER RIFERIMENTO SINUSOIDALE ===
+        sin_amplitude = 1;        % Ampiezza della sinusoide
+        sin_frequency = 1;        % Frequenza della sinusoide (rad/s)
+        K0 = place(A, B, [sin_frequency*1i, -sin_frequency*1i]);
+        A0 = A - B*K0;
+        x0_0 = [sin_amplitude; 0];
+        
+end
+L0 = place(A0', C', [-1, -2])';
+
+%% Initial Condition for agent
+
 x0_1 = [12 1]';
 x0_2 = [4 1]';
 x0_3 = [6 1]';

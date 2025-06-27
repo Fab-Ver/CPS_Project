@@ -20,13 +20,13 @@ C= [708.27 0];
 
 D = zeros(1,2);
  
-reference = 'ramp'; % 'const' % 'ramp' % 'sin'
+reference = 'const'; % 'const' % 'ramp' % 'sin'
 
 switch reference
     case 'const'
         R0 = 1;
         x0_0 = [R0 0]';
-        K0 = place(A, B, [0, -10]);
+        K0 = place(A, B, [-1, -20]);
     case 'ramp'
         slope = 1;
         K0 = acker(A, B, [0 0]);
@@ -86,7 +86,7 @@ K = R^(-1) * B' *Pc;
 
 % Local Observer
 P = are(A0', C' *R^(-1) * C, Q);
-F = P * C' * R^(-1);
+F = local_observer_design(A, B, C, K0, Q, R);
 
 
 In = eye(N);
@@ -96,7 +96,8 @@ eigvals = eig(Ag);
 if any(real(eigvals) >= 0)
     error('At least one eigenvalue has a real part greater than or equal to 0. The system may be unstable.');
 end
-
+debug_simulink_integration(A,B,C,K0,R,Q,c,F,Pc);
+analyze_Ag_components(A, B, C, K0, F, c, L, G, N);
 results = sim('cooperative_observer.slx');
 
 x_ref_col = results.x_ref_col.Data;

@@ -6,7 +6,7 @@ fprintf('=== INITIALIZING SIMULINK PARAMETERS ===\n');
 fprintf('Multi-Agent Magnetic Levitation System\n');
 fprintf('Cooperative Dynamic Regulator Design\n\n');
 
-noise_level = 10000;
+noise_level = 2;
 noise_freq = 0.1;
 
 T_sim = 50; 

@@ -21,8 +21,15 @@ G = [C eye(q)];
 nu_DSSO = 0.7; % Step size for DSSO
 nu_SSO = 0.99 / (norm(G, 2)^2); % Step size for SSO
 
-[state_estimation_error_SSO, attack_error_SSO] = SSO(x0, C, A, a, lambda, nu_SSO, q, n); 
-[state_estimation_error_DSSO, attack_error_DSSO] = DSSO(x0, C, A, a, lambda, nu_DSSO, q, n); 
+refined = false; 
+
+[state_estimation_error_SSO, attack_error_SSO] = SSO(x0, C, A, a, lambda, nu_SSO, q, n, refined); 
+[state_estimation_error_DSSO, attack_error_DSSO] = DSSO(x0, C, A, a, lambda, nu_DSSO, q, n, refined); 
+
+refined = true;
+
+[state_estimation_error_SSO_refined, attack_error_SSO_refined] = SSO(x0, C, A, a, lambda, nu_SSO, q, n, refined); 
+[state_estimation_error_DSSO_refined, attack_error_DSSO_refined] = DSSO(x0, C, A, a, lambda, nu_DSSO, q, n, refined); 
 
 iterations = 1:T_max;
 
@@ -40,3 +47,16 @@ xlabel('Iterations'); ylabel('Support Attack Error');
 legend; title('Support Attack Error'); grid on;
 exportgraphics(gcf, 'results/support_attack_error.png', 'Resolution', 300);
 
+figure;
+loglog(iterations, state_estimation_error_SSO_refined, '-', 'DisplayName', 'SSO'); hold on;
+loglog(iterations, state_estimation_error_DSSO_refined, '-', 'DisplayName', 'DSSO'); hold on;
+xlabel('Iterations'); ylabel('State Estimation Error');
+legend; title('State Estimation Error'); grid on;
+exportgraphics(gcf, 'results/state_estimation_error_refined.png', 'Resolution', 300);
+
+figure;
+semilogx(iterations, attack_error_SSO_refined, '-', 'DisplayName', 'SSO'); hold on;
+semilogx(iterations, attack_error_DSSO_refined, '-', 'DisplayName', 'DSSO'); hold on;
+xlabel('Iterations'); ylabel('Support Attack Error');
+legend; title('Support Attack Error'); grid on;
+exportgraphics(gcf, 'results/support_attack_error_refined.png', 'Resolution', 300);

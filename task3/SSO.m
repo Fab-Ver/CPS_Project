@@ -1,4 +1,4 @@
-function [state_estimation_error, attack_error] = SSO(x0, C, A, a_true, lambda, nu, q, n)
+function [state_estimation_error, attack_error] = SSO(x0, C, A, a_true, lambda, nu, q, n, ref)
     % SSO - Sparse Soft Observer 
     %
     % Inputs:
@@ -10,12 +10,15 @@ function [state_estimation_error, attack_error] = SSO(x0, C, A, a_true, lambda, 
     %   nu     - Step size for gradient descent update
     %   q      - Number of sensors
     %   n      - State dimension
+    %   ref    - True if a refined solution must be computed. 
     %
     % Outputs:
     %   state_estimation_error - Normalized state estimation error over time
     %   attack_error           - Support identification error over time
     
     T_max = 10000;
+    refine_interval = 100;
+    threshold = 1e-3;
     
     % Initialization
     x_est = zeros(n,1);
@@ -38,6 +41,11 @@ function [state_estimation_error, attack_error] = SSO(x0, C, A, a_true, lambda, 
         % Update state  and attack estimate 
         x_est = A * x_est - nu * A * C' * (y_est - y_true);
         a_est = soft_thresholding(a_est - nu * (y_est - y_true), nu * lambda);
+
+        if k == refine_interval && ref == true 
+            support_mask = abs(a_est) > threshold;
+            C(support_mask, :) = 0;
+        end
 
         % Propagate true system state
         x_true = A * x_true; 

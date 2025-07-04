@@ -6,7 +6,7 @@ fprintf('=== INITIALIZING SIMULINK PARAMETERS ===\n');
 fprintf('Multi-Agent Magnetic Levitation System\n');
 fprintf('Cooperative Dynamic Regulator Design\n\n');
 
-noise_level = 2;
+noise_level = 0;
 noise_freq = 0.1;
 
 T_sim = 50; 
@@ -20,13 +20,13 @@ C= [708.27 0];
 
 D = zeros(1,2);
  
-reference = 'const'; % 'const' % 'ramp' % 'sin'
+reference = 'sin'; % 'const' % 'ramp' % 'sin'
 
 switch reference
     case 'const'
         R0 = 1;
         x0_0 = [R0 0]';
-        K0 = place(A, B, [-1, -20]);
+        K0 = place(A, B, [0, -20]);
     case 'ramp'
         slope = 1;
         K0 = acker(A, B, [0 0]);
@@ -42,23 +42,23 @@ A0 = A-B*K0;
 
 L0 = place(A0', C', [-10, -20])';
 
-% perturb = @(v) v + 0.02 * randn(size(v));
-% 
-% x0_1 = perturb(x0_0);
-% x0_2 = perturb(x0_0);
-% x0_3 = perturb(x0_0);
-% x0_4 = perturb(x0_0);
-% x0_5 = perturb(x0_0);
-% x0_6 = perturb(x0_0);
+perturb = @(v) randn(size(v));
 
-range = 1.5;
+x0_1 = perturb(x0_0);
+x0_2 = perturb(x0_0);
+x0_3 = perturb(x0_0);
+x0_4 = perturb(x0_0);
+x0_5 = perturb(x0_0);
+x0_6 = perturb(x0_0);
 
-x0_1 = 2 * range * rand(2,1) - range;
-x0_2 = 2 * range * rand(2,1) - range;
-x0_3 = 2 * range * rand(2,1) - range;
-x0_4 = 2 * range * rand(2,1) - range;
-x0_5 = 2 * range * rand(2,1) - range;
-x0_6 = 2 * range * rand(2,1) - range;
+x0_hat = [0 ; 0]; 
+
+% x0_1 = [0 ; 0];
+% x0_2 = [0 ; 0];
+% x0_3 = [0 ; 0];
+% x0_4 = [0 ; 0];
+% x0_5 = [0 ; 0];
+% x0_6 = [0 ; 0];
 
 N = 6;
 
@@ -75,7 +75,7 @@ L = Deg - Adj;
 % Compute coupling gain c
 eig_LG = eig(L+G);
 cmin = 1/2 * (1/min(real(eig_LG)));
-c = cmin * 2;
+c = cmin;
 
 R = 1; % Weighting factor for control input
 Q = eye(2);
@@ -86,30 +86,61 @@ K = R^(-1) * B' *Pc;
 
 % Local Observer
 P = are(A0', C' *R^(-1) * C, Q);
-F = local_observer_design(A, B, C, K0, Q, R);
-
+F_c = P * C' * R^(-1);
+F_l = find_hurwitz_F(A, C , c);%local_observer_design(A, B, C, K0, Q, R);
 
 In = eye(N);
-Ag = kron(In, A0) - c * kron(L + G, F*C);
+Ag = kron(In, A0) - c * kron(L + G, F_c*C);
 eigvals = eig(Ag);
 
 if any(real(eigvals) >= 0)
     error('At least one eigenvalue has a real part greater than or equal to 0. The system may be unstable.');
 end
-debug_simulink_integration(A,B,C,K0,R,Q,c,F,Pc);
-analyze_Ag_components(A, B, C, K0, F, c, L, G, N);
-results = sim('cooperative_observer.slx');
 
-x_ref_col = results.x_ref_col.Data;
-x_hat_all = results.x_hat_all.Data; 
+Ac = A + c * F_l * C;
+eigvals = eig(Ac);
+
+if any(real(eigvals) >= 0)
+    error('At least one eigenvalue has a real part greater than or equal to 0. The system may be unstable.');
+end
+
+
+analyze_Ag_components(A, B, C, K0, F_c, c, L, G, N);
+
+
+results_cooperative = sim('cooperative_observer.slx');
+
+x_ref_col = results_cooperative.x_ref_col.Data;
+x_hat_all = results_cooperative.x_hat_all.Data; 
 
 state_estimation_error = abs(squeeze(x_ref_col - x_hat_all));
-t = results.tout;
-threshold = 1e-8; 
+t = results_cooperative.tout;
+threshold = 1e-6; 
 t_conv = time_to_conv(state_estimation_error, t, threshold);
 fprintf('Convergence time: %.4f s\n', t_conv);
 
-plot(results.tout, state_estimation_error);
+figure 
+plot(results_cooperative.tout, state_estimation_error); hold on; 
+grid on;
+legend('show');
+xlabel('Time [s]');
+ylabel('Estimation Error');
+title('Estimation Error of All States Over Time');
+
+
+results_local = sim('local_observer.slx');
+
+x_ref_col = results_local.x_ref_col.Data;
+x_hat_all = results_local.x_hat_all.Data; 
+
+state_estimation_error = abs(squeeze(x_ref_col - x_hat_all));
+t = results_local.tout;
+threshold = 1e-6; 
+t_conv = time_to_conv(state_estimation_error, t, threshold);
+fprintf('Convergence time: %.4f s\n', t_conv);
+
+figure
+plot(results_local.tout, state_estimation_error); hold on; 
 grid on;
 legend('show');
 xlabel('Time [s]');

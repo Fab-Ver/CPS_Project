@@ -79,7 +79,7 @@ P = are(A0', C' *R^(-1) * C, Q);
 F_c = P * C' * R^(-1);
 
 % Local Observer F
-F_l = find_hurwitz_F(A, C, c);
+F_l = find_hurwitz_F(A0, C, c);
 
 % Check if Ao is Hurwitz for the Cooperative Observer
 Ao_coop = kron(eye(N), A0) - c * kron(L + G, F_c*C);

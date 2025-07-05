@@ -2,9 +2,7 @@ clc;
 clear all;
 close all;
 
-fprintf('=== INITIALIZING SIMULINK PARAMETERS ===\n');
 fprintf('Multi-Agent Magnetic Levitation System\n');
-fprintf('Cooperative Dynamic Regulator Design\n\n');
 
 noise_level = 0;
 noise_freq = 0.1;
@@ -12,15 +10,13 @@ noise_freq = 0.1;
 T_sim = 50; 
 
 % Agents 
+N = 6;
 A = [0 1; 880.87 0];
-
 B = [0; -9.9453];
-
 C= [708.27 0];
-
 D = zeros(1,2);
  
-reference = 'sin'; % 'const' % 'ramp' % 'sin'
+reference = 'const'; % 'const' % 'ramp' % 'sin'
 
 switch reference
     case 'const'
@@ -60,17 +56,11 @@ x0_hat = [0 ; 0];
 % x0_5 = [0 ; 0];
 % x0_6 = [0 ; 0];
 
-N = 6;
+% Network Topology Definition
+% Options: 'star', 'star_s0', 'star_s0_complete', 'ring', 'complete', 'tree', 'chain'
 
-%% defintion of the Graph matrix
-% Star topology for simplicity (can be easily changed)
-topology_type = 'star';  % Options: 'star', 'ring', 'complete', 'chain'
-
-[Adj, G] = create_network_topology(N, topology_type);
-
-d_in = sum(Adj, 2);
-Deg = diag(d_in);
-L = Deg - Adj;
+topology_type = 'chain';  
+[Adj, G, L] = create_network_topology(N, topology_type);
 
 % Compute coupling gain c
 eig_LG = eig(L+G);
@@ -84,29 +74,31 @@ Q = eye(2);
 Pc = are(A0, B * R^(-1) * B', Q);
 K = R^(-1) * B' *Pc;
 
-% Local Observer
+% Cooperative Observer F
 P = are(A0', C' *R^(-1) * C, Q);
 F_c = P * C' * R^(-1);
-F_l = find_hurwitz_F(A, C , c);%local_observer_design(A, B, C, K0, Q, R);
 
-In = eye(N);
-Ag = kron(In, A0) - c * kron(L + G, F_c*C);
-eigvals = eig(Ag);
+% Local Observer F
+F_l = find_hurwitz_F(A, C, c);
 
-if any(real(eigvals) >= 0)
-    error('At least one eigenvalue has a real part greater than or equal to 0. The system may be unstable.');
+% Check if Ao is Hurwitz for the Cooperative Observer
+Ao_coop = kron(eye(N), A0) - c * kron(L + G, F_c*C);
+eigvals_Ao_coop = eig(Ao_coop);
+
+if any(real(eigvals_Ao_coop) >= 0)
+    error('Ao Cooperative NOT Hurwitz: at least one eigenvalue has a real part greater than or equal to 0.');
 end
 
-Ac = A + c * F_l * C;
-eigvals = eig(Ac);
+% Check if Ao is Hurwitz for the Local Observer
+Ao_local = A0 + c * F_l * C;
+eigvals_Ao_local = eig(Ao_local);
 
-if any(real(eigvals) >= 0)
-    error('At least one eigenvalue has a real part greater than or equal to 0. The system may be unstable.');
+if any(real(eigvals_Ao_local) >= 0)
+    error('Ao Local NOT Hurwitz: at least one eigenvalue has a real part greater than or equal to 0.');
 end
 
-
-analyze_Ag_components(A, B, C, K0, F_c, c, L, G, N);
-
+%Uncomment if you want to analyze Ao components
+%analyze_Ao_components(A, B, C, K0, F_c, F_l, c, L, G, N);
 
 results_cooperative = sim('cooperative_observer.slx');
 

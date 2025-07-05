@@ -7,7 +7,7 @@ fprintf('Multi-Agent Magnetic Levitation System\n');
 noise_level = 0;
 noise_freq = 0.1;
 
-T_sim = 50; 
+T_sim = 100; 
 
 % Agents 
 N = 6;
@@ -16,7 +16,7 @@ B = [0; -9.9453];
 C= [708.27 0];
 D = zeros(1,2);
  
-reference = 'const'; % 'const' % 'ramp' % 'sin'
+reference = 'sin'; % 'const' % 'ramp' % 'sin'
 
 switch reference
     case 'const'
@@ -38,7 +38,7 @@ A0 = A-B*K0;
 
 L0 = place(A0', C', [-10, -20])';
 
-perturb = @(v) randn(size(v));
+perturb = @(v) 0.5 * randn(size(v));
 
 x0_1 = perturb(x0_0);
 x0_2 = perturb(x0_0);
@@ -100,41 +100,64 @@ end
 %Uncomment if you want to analyze Ao components
 %analyze_Ao_components(A, B, C, K0, F_c, F_l, c, L, G, N);
 
+% --- Cooperative Observer Results ---
 results_cooperative = sim('cooperative_observer.slx');
 
-x_ref_col = results_cooperative.x_ref_col.Data;
-x_hat_all = results_cooperative.x_hat_all.Data; 
+x_hat_all = results_cooperative.x_hat_all.Data;   % [12 x 1 x N]
+x_ref_col = results_cooperative.x_ref_col.Data;   % [12 x 1 x N]
+t = results_cooperative.tout;                     % [N x 1]
 
-state_estimation_error = abs(squeeze(x_ref_col - x_hat_all));
-t = results_cooperative.tout;
-threshold = 1e-6; 
-t_conv = time_to_conv(state_estimation_error, t, threshold);
-fprintf('Convergence time: %.4f s\n', t_conv);
+% Plot State Estimation vs Reference for each Agent
+plot_agent_states_vs_ref(x_hat_all, x_ref_col, t, 'Cooperative');
 
-figure 
-plot(results_cooperative.tout, state_estimation_error); hold on; 
-grid on;
-legend('show');
-xlabel('Time [s]');
-ylabel('Estimation Error');
-title('Estimation Error of All States Over Time');
+% Plot Estimation Error for each Agent
+plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, 'Cooperative');
 
 
+% --- Local Observer Results ---
 results_local = sim('local_observer.slx');
 
-x_ref_col = results_local.x_ref_col.Data;
-x_hat_all = results_local.x_hat_all.Data; 
+x_hat_all = results_local.x_hat_all.Data;   % [12 x 1 x N]
+x_ref_col = results_local.x_ref_col.Data;   % [12 x 1 x N]
+t = results_local.tout;                     % [N x 1]
 
-state_estimation_error = abs(squeeze(x_ref_col - x_hat_all));
-t = results_local.tout;
-threshold = 1e-6; 
-t_conv = time_to_conv(state_estimation_error, t, threshold);
-fprintf('Convergence time: %.4f s\n', t_conv);
+% Plot State Estimation vs Reference for each Agent
+plot_agent_states_vs_ref(x_hat_all, x_ref_col, t, 'Local');
 
-figure
-plot(results_local.tout, state_estimation_error); hold on; 
-grid on;
-legend('show');
-xlabel('Time [s]');
-ylabel('Estimation Error');
-title('Estimation Error of All States Over Time');
+% Plot Estimation Error for each Agent
+plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, 'Local');
+
+
+
+% --- Compute convergence time ---
+state_estimation_error = abs(squeeze(x_ref_col - x_hat_all)); % [12 x T]
+threshold = 1e-5;
+window_duration = 2.0;
+
+[t_conv_thresh, t_conv_deriv] = check_convergence(state_estimation_error, t, threshold, window_duration);
+
+
+
+% --- Remove NaNs for statistics ---
+valid_thresh = ~isnan(t_conv_thresh);
+valid_deriv = ~isnan(t_conv_deriv);
+
+% --- Compute statistics ---
+mean_t_conv_thresh = mean(t_conv_thresh(valid_thresh));
+median_t_conv_thresh = median(t_conv_thresh(valid_thresh));
+
+mean_t_conv_deriv = mean(t_conv_deriv(valid_deriv));
+median_t_conv_deriv = median(t_conv_deriv(valid_deriv));
+
+% --- Display results ---
+fprintf('\n--- Convergence Analysis ---\n');
+
+fprintf('Threshold-based convergence:\n');
+disp(t_conv_thresh');
+fprintf('  Average convergence time: %.4f s\n', mean_t_conv_thresh);
+fprintf('  Median convergence time:  %.4f s\n', median_t_conv_thresh);
+
+fprintf('\nDerivative-based convergence:\n');
+disp(t_conv_deriv');
+fprintf('  Average convergence time: %.4f s\n', mean_t_conv_deriv);
+fprintf('  Median convergence time:  %.4f s\n', median_t_conv_deriv);

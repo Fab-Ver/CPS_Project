@@ -16,7 +16,7 @@ B = [0; -9.9453];
 C= [708.27 0];
 D = zeros(1,2);
  
-reference = 'sin'; % 'const' % 'ramp' % 'sin'
+reference = 'const'; % 'const' % 'ramp' % 'sin'
 
 switch reference
     case 'const'
@@ -47,7 +47,7 @@ x0_4 = perturb(x0_0);
 x0_5 = perturb(x0_0);
 x0_6 = perturb(x0_0);
 
-x0_hat = [0 ; 0]; 
+x0_hat = [0 ; 0];
 
 % x0_1 = [0 ; 0];
 % x0_2 = [0 ; 0];
@@ -57,9 +57,9 @@ x0_hat = [0 ; 0];
 % x0_6 = [0 ; 0];
 
 % Network Topology Definition
-% Options: 'star', 'star_s0', 'star_s0_complete', 'ring', 'complete', 'tree', 'chain'
+% Options: 'chain', 'star', 'tree', 'complete'
 
-topology_type = 'chain';  
+topology_type = 'complete';  
 [Adj, G, L] = create_network_topology(N, topology_type);
 
 % Compute coupling gain c
@@ -108,10 +108,10 @@ x_ref_col = results_cooperative.x_ref_col.Data;   % [12 x 1 x N]
 t = results_cooperative.tout;                     % [N x 1]
 
 % Plot State Estimation vs Reference for each Agent
-plot_agent_states_vs_ref(x_hat_all, x_ref_col, t, 'Cooperative');
+%plot_agent_states_vs_ref(x_hat_all, x_ref_col, t, 'Cooperative');
 
 % Plot Estimation Error for each Agent
-plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, 'Cooperative');
+%plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, 'Cooperative');
 
 
 % --- Local Observer Results ---
@@ -122,16 +122,16 @@ x_ref_col = results_local.x_ref_col.Data;   % [12 x 1 x N]
 t = results_local.tout;                     % [N x 1]
 
 % Plot State Estimation vs Reference for each Agent
-plot_agent_states_vs_ref(x_hat_all, x_ref_col, t, 'Local');
+%plot_agent_states_vs_ref(x_hat_all, x_ref_col, t, 'Local');
 
 % Plot Estimation Error for each Agent
-plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, 'Local');
+%plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, 'Local');
 
 
 
 % --- Compute convergence time ---
 state_estimation_error = abs(squeeze(x_ref_col - x_hat_all)); % [12 x T]
-threshold = 1e-5;
+threshold = 1e-4;
 window_duration = 2.0;
 
 [t_conv_thresh, t_conv_deriv] = check_convergence(state_estimation_error, t, threshold, window_duration);

@@ -10,30 +10,7 @@ function [Adj, G, L] = create_network_topology(N, topology_type)
             Adj(2:N, 1) = 1;  % All nodes receive info from node 1
             Adj(1, 2:N) = 1;  % Node 1 receives info from all
             G(1, 1) = 1;  % Only node 1 is pinned
-        case 'star_s0'
-            %Star Topology: node 0 pinned to all others, no follower
-            %connection
-            for i=1:N
-                G(i, i) = 1;
-            end
-        case 'star_s0_complete'
-            %Star Topology: node 0 pinned to all others, each node i
-            %connected with i+1
-            for i=1:N-1
-                Adj(i+1, i) = 1;
-            end
-            Adj(1,N) = 1; 
-            for i=1:N
-                G(i, i) = 1;
-            end
-        case 'ring'
-            % Ring topology: each node connected to next
-            for i = 1:N-1
-                Adj(i+1, i) = 1;
-            end
-            Adj(1, N) = 1;  % Close the ring
-            G(1, 1) = 1;  % Node 1 pinned to leader
-            
+     
         case 'complete'
             % Complete graph: all nodes connected to all
             Adj = ones(N, N) - eye(N);
@@ -53,6 +30,7 @@ function [Adj, G, L] = create_network_topology(N, topology_type)
                 Adj(i+1, i) = 1;
             end
             G(1, 1) = 1; % First node pinned to leader
+   
     end
     % Compute the in-degree of node i and the matrix D
     d_in = sum(Adj, 2);

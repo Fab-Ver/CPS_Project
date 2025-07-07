@@ -17,54 +17,54 @@ function F = find_hurwitz_F(A, C, c)
 [n, ~] = size(A);
 [p, ~] = size(C);
 
-fprintf('=== Finding F to make (A + c*F*C) Hurwitz ===\n');
+%fprintf('=== Finding F to make (A + c*F*C) Hurwitz ===\n');
 
 % Check if C is square and full rank for direct LQR approach
 if p == n && rank(C) == n
     % Method 1: Direct LQR approach
-    fprintf('Using Method 1: Direct LQR approach\n');
-    fprintf('C is square (%dx%d) and full rank (rank = %d)\n', p, n, rank(C));
+    %fprintf('Using Method 1: Direct LQR approach\n');
+    %fprintf('C is square (%dx%d) and full rank (rank = %d)\n', p, n, rank(C));
     
     B = c * eye(n);
     Q = eye(n);     % State weighting matrix
     R = eye(p);     % Control weighting matrix
     
-    fprintf('LQR parameters: Q = I_%d, R = I_%d, B = %g*I_%d\n', n, p, c, n);
+    %fprintf('LQR parameters: Q = I_%d, R = I_%d, B = %g*I_%d\n', n, p, c, n);
     
     try
         K = lqr(A, B, Q, R);
         F = K / C;  % F = K * inv(C)
-        fprintf('LQR solution found successfully\n');
+        %fprintf('LQR solution found successfully\n');
     catch ME
-        fprintf('LQR failed: %s\n', ME.message);
-        fprintf('Falling back to optimization method...\n');
+        %fprintf('LQR failed: %s\n', ME.message);
+        %fprintf('Falling back to optimization method...\n');
         F = optimize_F_for_hurwitz(A, C, c);
     end
 else
     % Method 2: Optimization approach for general case
-    fprintf('Using Method 2: Optimization approach\n');
-    fprintf('C is not square or not full rank\n');
+    %fprintf('Using Method 2: Optimization approach\n');
+    %fprintf('C is not square or not full rank\n');
     F = optimize_F_for_hurwitz(A, C, c);
 end
 
 % Verify the result
-fprintf('\n=== Verification ===\n');
+%fprintf('\n=== Verification ===\n');
 H = A + c * F * C;
 eigenvals = eig(H);
 
-fprintf('Found F matrix (%dx%d):\n', size(F,1), size(F,2));
-disp(F);
+%fprintf('Found F matrix (%dx%d):\n', size(F,1), size(F,2));
+%disp(F);
 
 if all(real(eigenvals) < 0)
-    fprintf('SUCCESS! Matrix (A + c*F*C) is Hurwitz.\n');
-    fprintf('All eigenvalues have negative real parts:\n');
-    disp(real(eigenvals)')
+    %fprintf('SUCCESS! Matrix (A + c*F*C) is Hurwitz.\n');
+    %fprintf('All eigenvalues have negative real parts:\n');
+    %disp(real(eigenvals)')
 else
-    fprintf('✗ WARNING! Result may not be Hurwitz.\n');
-    fprintf('Some eigenvalues have non-negative real parts:\n');
-    disp(real(eigenvals)')
+    %fprintf('WARNING! Result may not be Hurwitz.\n');
+    %fprintf('Some eigenvalues have non-negative real parts:\n');
+    %disp(real(eigenvals)')
 end
-fprintf('==========================================\n');
+%fprintf('==========================================\n');
 
 end
 
@@ -85,18 +85,18 @@ function F = optimize_F_for_hurwitz(A, C, c)
     
     % Optimize
     try
-        fprintf('Running optimization...\n');
+        %fprintf('Running optimization...\n');
         [F_opt, ~, ~] = fminunc(objective, F0(:), options);
         F = reshape(F_opt, n, p);
-        fprintf('Optimization completed\n');
+        %fprintf('Optimization completed\n');
     catch ME
-        fprintf('First optimization attempt failed: %s\n', ME.message);
-        fprintf('Trying with negative initial guess...\n');
+        %fprintf('First optimization attempt failed: %s\n', ME.message);
+        %fprintf('Trying with negative initial guess...\n');
         % If optimization fails, try a different initial guess
         F0 = -abs(randn(n, p));  % Try negative initial guess
         [F_opt, ~, ~] = fminunc(objective, F0(:), options);
         F = reshape(F_opt, n, p);
-        fprintf('Second optimization completed \n');
+        %fprintf('Second optimization completed \n');
     end
 end
 

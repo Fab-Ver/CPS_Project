@@ -7,6 +7,8 @@ fprintf('Multi-Agent Magnetic Levitation System\n');
 noise_level = 0;
 noise_freq = 0.1;
 
+rng(42)
+
 T_sim = 100; 
 
 % Agents 
@@ -122,42 +124,15 @@ x_ref_col = results_local.x_ref_col.Data;   % [12 x 1 x N]
 t = results_local.tout;                     % [N x 1]
 
 % Plot State Estimation vs Reference for each Agent
-%plot_agent_states_vs_ref(x_hat_all, x_ref_col, t, 'Local');
+plot_agent_states_vs_ref(x_hat_all, x_ref_col, t, 'Local');
 
 % Plot Estimation Error for each Agent
-%plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, 'Local');
-
-
+plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, 'Local');
 
 % --- Compute convergence time ---
 state_estimation_error = abs(squeeze(x_ref_col - x_hat_all)); % [12 x T]
-threshold = 1e-4;
-window_duration = 2.0;
+threshold = 1e-5;
 
-[t_conv_thresh, t_conv_deriv] = check_convergence(state_estimation_error, t, threshold, window_duration);
+t_conv = time_to_conv(state_estimation_error, t, threshold);
 
-
-
-% --- Remove NaNs for statistics ---
-valid_thresh = ~isnan(t_conv_thresh);
-valid_deriv = ~isnan(t_conv_deriv);
-
-% --- Compute statistics ---
-mean_t_conv_thresh = mean(t_conv_thresh(valid_thresh));
-median_t_conv_thresh = median(t_conv_thresh(valid_thresh));
-
-mean_t_conv_deriv = mean(t_conv_deriv(valid_deriv));
-median_t_conv_deriv = median(t_conv_deriv(valid_deriv));
-
-% --- Display results ---
-fprintf('\n--- Convergence Analysis ---\n');
-
-fprintf('Threshold-based convergence:\n');
-disp(t_conv_thresh');
-fprintf('  Average convergence time: %.4f s\n', mean_t_conv_thresh);
-fprintf('  Median convergence time:  %.4f s\n', median_t_conv_thresh);
-
-fprintf('\nDerivative-based convergence:\n');
-disp(t_conv_deriv');
-fprintf('  Average convergence time: %.4f s\n', mean_t_conv_deriv);
-fprintf('  Median convergence time:  %.4f s\n', median_t_conv_deriv);
+fprintf('Convergence time: %.4f s\n', t_conv);

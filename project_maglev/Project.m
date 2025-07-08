@@ -27,7 +27,7 @@ topology_type = 'star';
 
 % Nested loops for Q, R, and noise
 
-Q = Q_values{1};
+Q = Q_values{3};
 R = R_values(2);
 noise_level = noise_levels(1);
 noise_freq = 0.1;

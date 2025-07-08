@@ -5,7 +5,7 @@ close all;
 fprintf('Multi-Agent Magnetic Levitation System\n');
 
 % Define parameter ranges to test
-Q_values = {eye(2), 2*eye(2), 100*eye(2)};
+Q_values = {eye(2), 2*eye(2), 200*eye(2)};
 R_values = [0.1, 1, 100];
 noise_levels = [0, 0.01, 0.05];
 rng(42)
@@ -27,8 +27,8 @@ topology_type = 'star';
 
 % Nested loops for Q, R, and noise
 
-Q = Q_values{3};
-R = R_values(2);
+Q = Q_values{1};
+R = R_values(3);
 noise_level = noise_levels(1);
 noise_freq = 0.1;
 
@@ -36,8 +36,8 @@ fprintf('\nExperiment %d: Q=%.1f*I, R=%.2f, noise=%.3f\n', ...
     exp_num, trace(Q)/2, R, noise_level);
 exp_num = exp_num + 1;
 %for w = 1:length(c_weigth)
-    for ref_cell = {'const', 'ramp', 'sin'}
-        reference = ref_cell{1};
+    %for ref_cell = {'const', 'ramp', 'sin'}
+        reference = 'sin';
         
         % --- Reference-dependent setup ---
         switch reference
@@ -110,8 +110,8 @@ exp_num = exp_num + 1;
         y_ref = results_cooperative.y_ref.Data;% [6 x 1 x N]
         state_estimation_error_cooperative = abs(squeeze(x_ref_col - x_hat_all));
         [t_conv_cooperative, idx_c] = time_to_conv(state_estimation_error_cooperative, t, threshold);
-        % plot_agent_states_vs_ref(x_hat_all,x_ref_col,t,'cooperative');
-        % plot_estimation_errors_by_state(x_hat_all,x_ref_col,t,'cooperative')
+        plot_agent_states_vs_ref(x_hat_all,x_ref_col,t,'cooperative');
+        plot_estimation_errors_by_state(x_hat_all,x_ref_col,t,'cooperative')
         plot_agent_outputs(y_i_all,y_ref,t,'cooperative',Q,R,noise_level,c);
         % Local Observer Results
         results_local = sim('local_observer.slx');
@@ -125,8 +125,8 @@ exp_num = exp_num + 1;
         [t_conv_local, idx_l] = time_to_conv(state_estimation_error_local, t, threshold);
         
 
-        % plot_agent_states_vs_ref(x_hat_all,x_ref_col,t,'local');
-        % plot_estimation_errors_by_state(x_hat_all,x_ref_col,t,'local')
+        plot_agent_states_vs_ref(x_hat_all,x_ref_col,t,'local');
+        plot_estimation_errors_by_state(x_hat_all,x_ref_col,t,'local')
         % Save all the data
         run = struct();
         run.topology_type = topology_type;
@@ -158,7 +158,7 @@ exp_num = exp_num + 1;
         % Print brief results for each reference
         fprintf('  %s: Coop T_conv=%.2f, Local T_conv=%.2f\n', ...
             reference, t_conv_cooperative, t_conv_local);
-    end
+    %end
 %end
 
 % Display detailed results

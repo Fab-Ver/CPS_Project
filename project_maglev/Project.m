@@ -57,7 +57,6 @@ for ref_cell = {'const', 'ramp', 'sin'}
 
     % Network Topology Definition
     % Options: 'chain', 'star', 'tree', 'complete'
-    topology_type = 'chain';
     [Adj, G, L] = create_network_topology(N, topology_type);
 
     % Compute coupling gain c
@@ -95,7 +94,7 @@ for ref_cell = {'const', 'ramp', 'sin'}
 
     %Uncomment if you want to analyze Ao components
     %analyze_Ao_components(A, B, C, K0, F_c, F_l, c, L, G, N);
-    threshold = 1e-4;
+    threshold = 2e-4;
 
     % Cooperative Observer Results
     results_cooperative = sim('cooperative_observer.slx'); 
@@ -107,7 +106,7 @@ for ref_cell = {'const', 'ramp', 'sin'}
     %plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, sprintf('Local - %s', reference));
 
     state_estimation_error_cooperative = abs(squeeze(x_ref_col - x_hat_all));
-    t_conv_cooperative = time_to_conv(state_estimation_error_cooperative, t, threshold);
+    [t_conv_cooperative, idx_c] = time_to_conv(state_estimation_error_cooperative, t, threshold);
     %fprintf('\n[%s] Cooperative observer convergence time: %.4f s\n', reference, t_conv);
 
     % Local Observer Results
@@ -120,9 +119,8 @@ for ref_cell = {'const', 'ramp', 'sin'}
     %plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, sprintf('Local - %s', reference));
 
     state_estimation_error_local = abs(squeeze(x_ref_col - x_hat_all));
-    t_conv_local = time_to_conv(state_estimation_error_local, t, threshold);
+    [t_conv_local, idx_l] = time_to_conv(state_estimation_error_local, t, threshold);
     %fprintf('[%s] Local observer convergence time: %.4f s\n', reference, t_conv);
-
     %Save all the data
     run.topology_type = topology_type;
     run.reference = reference;
@@ -131,13 +129,27 @@ for ref_cell = {'const', 'ramp', 'sin'}
     run.c = c;
     run.F_c = F_c;
     run.F_l = F_l;
-    run.see_coop = max(state_estimation_error_cooperative(:,end));
-    run.see_local = max(state_estimation_error_local(:,end));
+
+    if ~isnan(idx_c)
+        run.see_coop = max(state_estimation_error_cooperative(:,idx_c));
+    else
+        run.see_coop = max(state_estimation_error_cooperative(:,end));
+    end 
+    if ~isnan(idx_l)
+        run.see_local = max(state_estimation_error_local(:,idx_l));
+    else
+        run.see_local = max(state_estimation_error_local(:,end));
+    end 
     run.t_coop = t_conv_cooperative;
     run.t_local = t_conv_local;
 
     runs{end+1} = run; 
 end
+end
+
+for i = 1:length(runs)
+    fprintf('--- Run %d ---\n', i);
+    disp(runs{i});
 end
 
 fprintf('End');

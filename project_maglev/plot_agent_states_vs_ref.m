@@ -12,7 +12,7 @@ function plot_agent_states_vs_ref(x_hat_all, x_ref_col, t, observer_type)
     plot(t, x_ref_col(1, :), 'k--', 'LineWidth', 1.5, 'DisplayName', 'x_1^{ref}');
     for i = 1:N_agents
         idx = (i-1)*n_states + 1;
-        plot(t, x_hat_all(idx, :), '-', 'Color', colors(i, :), ...
+        plot(t, x_hat_all(i, :), '-', 'Color', colors(i, :), ...
             'DisplayName', sprintf('x_1^{hat} (agent %d)', i), 'LineWidth', 1.5);
     end
     xlabel('Time [s]');

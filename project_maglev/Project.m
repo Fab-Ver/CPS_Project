@@ -10,7 +10,7 @@ R_values = [0.1, 1, 100];
 noise_levels = [0, 0.01, 0.05];
 rng(42)
 
-T_sim = 400;
+T_sim = 25;
 
 % Agents
 N = 6;
@@ -29,7 +29,7 @@ topology_type = 'star';
 
 Q = Q_values{1};
 R = R_values(3);
-noise_level = noise_levels(1);
+noise_level = noise_levels(2);
 noise_freq = 0.1;
 
 fprintf('\nExperiment %d: Q=%.1f*I, R=%.2f, noise=%.3f\n', ...
@@ -106,11 +106,13 @@ exp_num = exp_num + 1;
         x_hat_all = results_cooperative.x_hat_all.Data;  % [12 x 1 x N]
         x_ref_col = results_cooperative.x_ref_col.Data;  % [12 x 1 x N]
         t = results_cooperative.tout;                    % [Nx1]
-        
+        y_i_all = results_cooperative.y_i_all.Data; % [6 x 1 x N]
+        y_ref = results_cooperative.y_ref.Data;% [6 x 1 x N]
         state_estimation_error_cooperative = abs(squeeze(x_ref_col - x_hat_all));
         [t_conv_cooperative, idx_c] = time_to_conv(state_estimation_error_cooperative, t, threshold);
-        plot_agent_states_vs_ref(x_hat_all,x_ref_col,t,'cooperative');
-        plot_estimation_errors_by_state(x_hat_all,x_ref_col,t,'cooperative')
+        % plot_agent_states_vs_ref(x_hat_all,x_ref_col,t,'cooperative');
+        % plot_estimation_errors_by_state(x_hat_all,x_ref_col,t,'cooperative')
+       plot_agent_outputs(y_i_all,y_ref,t,'cooperative',Q,R,noise_level);
         % Local Observer Results
         results_local = sim('local_observer.slx');
         x_hat_all = results_local.x_hat_all.Data;
@@ -121,8 +123,8 @@ exp_num = exp_num + 1;
         [t_conv_local, idx_l] = time_to_conv(state_estimation_error_local, t, threshold);
         
 
-        plot_agent_states_vs_ref(x_hat_all,x_ref_col,t,'local');
-        plot_estimation_errors_by_state(x_hat_all,x_ref_col,t,'local')
+        % plot_agent_states_vs_ref(x_hat_all,x_ref_col,t,'local');
+        % plot_estimation_errors_by_state(x_hat_all,x_ref_col,t,'local')
         % Save all the data
         run = struct();
         run.topology_type = topology_type;

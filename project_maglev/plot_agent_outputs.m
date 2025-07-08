@@ -1,4 +1,4 @@
-function plot_agent_outputs(y_i_all, y_ref, t, observer_type, Q, R, noise)
+function plot_agent_outputs(y_i_all, y_ref, t, observer_type, Q, R, noise, c_factor)
     % Plot agent outputs against reference in a single plot
     % y_i_all: individual agent outputs [N x 1 x time] or [N x time]
     % y_ref: reference signal [time x 1]
@@ -57,10 +57,10 @@ function plot_agent_outputs(y_i_all, y_ref, t, observer_type, Q, R, noise)
         Q_val = Q;
     end
     
-    % Save the figure with parameters in filename
+   % Update the filename to include c_factor
     timestamp = datestr(now, 'yyyymmdd_HHMMSS');
-    filename = sprintf('img/agent_outputs_%s_Q%.0f_R%.1f_n%.3f_%s.png', ...
-        observer_type, Q_val, R, noise, timestamp);
+    filename = sprintf('img/agent_outputs_%s_Q%.0f_R%.1f_n%.3f_c%.1f_%s.png', ...
+        observer_type, Q_val, R, noise, c_factor, timestamp);
     saveas(fig, filename);
     fprintf('Figure saved as: %s\n', filename);
 end

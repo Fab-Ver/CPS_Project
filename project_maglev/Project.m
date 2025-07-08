@@ -9,8 +9,8 @@ Q_values = {eye(2), 2*eye(2), 100*eye(2)};
 R_values = [0.1, 1, 100];
 noise_levels = [0, 0.01, 0.05];
 rng(42)
-
-T_sim = 25;
+c_weigth =[5, 10 , 100]';
+T_sim = 250;
 
 % Agents
 N = 6;
@@ -27,7 +27,7 @@ topology_type = 'star';
 
 % Nested loops for Q, R, and noise
 
-Q = Q_values{3};
+Q = Q_values{1};
 R = R_values(2);
 noise_level = noise_levels(1);
 noise_freq = 0.1;
@@ -35,7 +35,7 @@ noise_freq = 0.1;
 fprintf('\nExperiment %d: Q=%.1f*I, R=%.2f, noise=%.3f\n', ...
     exp_num, trace(Q)/2, R, noise_level);
 exp_num = exp_num + 1;
-            
+%for w = 1:length(c_weigth)
     for ref_cell = {'const', 'ramp', 'sin'}
         reference = ref_cell{1};
         
@@ -72,7 +72,7 @@ exp_num = exp_num + 1;
         % Compute coupling gain c
         eig_LG = eig(L + G);
         cmin = 1/2 * (1 / min(real(eig_LG)));
-        c = cmin;
+        c = cmin*2;
         
         % Distributed Controller Riccati Equation
         Pc = are(A0, B * R^(-1) * B', Q);
@@ -112,7 +112,7 @@ exp_num = exp_num + 1;
         [t_conv_cooperative, idx_c] = time_to_conv(state_estimation_error_cooperative, t, threshold);
         % plot_agent_states_vs_ref(x_hat_all,x_ref_col,t,'cooperative');
         % plot_estimation_errors_by_state(x_hat_all,x_ref_col,t,'cooperative')
-        plot_agent_outputs(y_i_all,y_ref,t,'cooperative',Q,R,noise_level);
+        plot_agent_outputs(y_i_all,y_ref,t,'cooperative',Q,R,noise_level,c);
         % Local Observer Results
         results_local = sim('local_observer.slx');
         x_hat_all = results_local.x_hat_all.Data;
@@ -120,7 +120,7 @@ exp_num = exp_num + 1;
         t = results_local.tout;
         y_i_all = results_local.y_i_all.Data; % [6 x 1 x N]
         y_ref = results_local.y_ref.Data;% [6 x 1 x N]
-        plot_agent_outputs(y_i_all,y_ref,t,'local',Q,R,noise_level);
+        plot_agent_outputs(y_i_all,y_ref,t,'local',Q,R,noise_level,c);
         state_estimation_error_local = abs(squeeze(x_ref_col - x_hat_all));
         [t_conv_local, idx_l] = time_to_conv(state_estimation_error_local, t, threshold);
         
@@ -159,7 +159,7 @@ exp_num = exp_num + 1;
         fprintf('  %s: Coop T_conv=%.2f, Local T_conv=%.2f\n', ...
             reference, t_conv_cooperative, t_conv_local);
     end
-
+%end
 
 % Display detailed results
 fprintf('\n--- DETAILED RESULTS ---\n');

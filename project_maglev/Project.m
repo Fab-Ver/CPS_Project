@@ -5,8 +5,8 @@ close all;
 fprintf('Multi-Agent Magnetic Levitation System\n');
 
 % Define parameter ranges to test
-Q_values = {eye(2), 2*eye(2), 10*eye(2)};
-R_values = [0.1, 1, 10];
+Q_values = {eye(2), 2*eye(2), 100*eye(2)};
+R_values = [0.1, 1, 100];
 noise_levels = [0, 0.01, 0.05];
 rng(42)
 
@@ -28,7 +28,7 @@ topology_type = 'star';
 % Nested loops for Q, R, and noise
 
 Q = Q_values{1};
-R = R_values(1);
+R = R_values(3);
 noise_level = noise_levels(1);
 noise_freq = 0.1;
 

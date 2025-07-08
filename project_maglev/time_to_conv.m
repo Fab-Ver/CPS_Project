@@ -10,22 +10,17 @@ function [t_conv, t_idx] = time_to_conv(error_data, time_vector, threshold)
 % Output:
 %   t_conv       - Time at which all error signals stay below threshold
 
-    abs_error = abs(error_data);  
-
+    abs_error = abs(error_data);  % [N×T]
     is_below_thresh = all(abs_error < threshold, 1);  % [1×T]
 
-    % Find the first time index where all errors stay below threshold
-    % and remain below for the rest of the simulation
-    for k = 1:length(is_below_thresh)
-        if all(is_below_thresh(k:end))
-            t_conv = time_vector(k);
-            t_idx = k; 
-            return;
-        end
-    end
+    idx = find(is_below_thresh, 1);  % First istant
 
-    % If convergence never achieved
-    t_conv = NaN;
-    t_idx = NaN;
-    warning('Convergence not reached within simulation time.');
+    if isempty(idx)
+        t_conv = NaN;
+        t_idx = NaN;
+        warning('Convergence not reached within simulation time.');
+    else
+        t_conv = time_vector(idx);
+        t_idx = idx;
+    end
 end

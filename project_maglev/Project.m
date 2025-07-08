@@ -10,7 +10,7 @@ R_values = [0.1, 1, 100];
 noise_levels = [0, 0.01, 0.05];
 rng(42)
 c_weigth =[5, 10 , 100]';
-T_sim = 250;
+T_sim = 10;
 
 % Agents
 N = 6;

@@ -40,5 +40,5 @@ function [Adj, G, L] = create_network_topology(N, topology_type)
     L = Deg - Adj;
     
     %Visualize Network Topology 
-    %visualize_network(Adj, G, N, topology_type);
+    visualize_network(Adj, G, N, topology_type);
 end

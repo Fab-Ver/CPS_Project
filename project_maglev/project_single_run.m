@@ -4,6 +4,9 @@ close all;
 
 fprintf('Multi-Agent Magnetic Levitation System\n');
 
+% RUN both local and cooperative observers for a single run on the choosen
+% parameters. 
+
 % Agents
 N = 6;
 A = [0 1; 880.87 0];

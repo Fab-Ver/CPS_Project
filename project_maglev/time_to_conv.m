@@ -18,7 +18,7 @@ function [t_conv, t_idx] = time_to_conv(error_data, time_vector, threshold)
     if isempty(idx)
         t_conv = NaN;
         t_idx = NaN;
-        warning('Convergence not reached within simulation time.');
+        %warning('Convergence not reached within simulation time.');
     else
         t_conv = time_vector(idx);
         t_idx = idx;

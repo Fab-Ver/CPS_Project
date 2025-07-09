@@ -54,7 +54,7 @@ function plot_agent_outputs(y_i_all, y_ref, t, observer_type, Q, R, noise, c_fac
     
    % Update the filename to include c_factor
     timestamp = datestr(now, 'yyyymmdd_HHMMSS');
-    filename = sprintf('results/img/agent_outputs_%s_Q%.0f_R%.1f_n%.3f_c%.1f_%s.png', ...
+    filename = sprintf('results/output/agent_outputs_%s_Q%.0f_R%.1f_n%.3f_c%.1f_%s.png', ...
         observer_type, Q_val, R, noise, c_factor, timestamp);
     saveas(fig, filename);
     fprintf('Figure saved as: %s\n', filename);

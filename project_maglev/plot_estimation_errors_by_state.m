@@ -16,7 +16,7 @@ function plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, observer_type)
     end
     xlabel('Time [s]');
     ylabel('Estimation Error');
-    title(sprintf('State 1 Estimation Error [%s Observer]', observer_type));
+    title(sprintf('Position Estimation Error [%s Observer]', observer_type));
     legend('Location', 'bestoutside');
 
     % State 2
@@ -28,7 +28,7 @@ function plot_estimation_errors_by_state(x_hat_all, x_ref_col, t, observer_type)
     end
     xlabel('Time [s]');
     ylabel('Estimation Error');
-    title(sprintf('State 2 Estimation Error [%s Observer]', observer_type));
+    title(sprintf('Velocity Estimation Error [%s Observer]', observer_type));
     legend('Location', 'bestoutside');
 
 end
